@@ -25,14 +25,14 @@ public class MainApp {
 
         int port = 9000;
         String ipAdress = "127.0.0.1";
-        String antPattern = "/pensiltik";
+        String antPattern = "/viii28stw";
 
         propertiesConfiguration.setProperty("server.port", port);
         propertiesConfiguration.setProperty("management.server.port", 9001);
         propertiesConfiguration.setProperty("management.server.address", ipAdress);
 
         propertiesConfiguration.setProperty("spring.datasource.driver-class-name", "com.mysql.cj.jdbc.Driver");
-        propertiesConfiguration.setProperty("spring.datasource.url", "jdbc:mysql://localhost:3306/pensiltikdb?serverTimezone=".concat(TimeZone.getDefault().getID()));
+        propertiesConfiguration.setProperty("spring.datasource.url", "jdbc:mysql://localhost:3306/viii28db?serverTimezone=".concat(TimeZone.getDefault().getID()));
         propertiesConfiguration.setProperty("spring.datasource.username", "root");
         propertiesConfiguration.setProperty("spring.datasource.password", "#Fp31314");
         propertiesConfiguration.setProperty("spring.datasource.tomcat.max-wait", "20000");

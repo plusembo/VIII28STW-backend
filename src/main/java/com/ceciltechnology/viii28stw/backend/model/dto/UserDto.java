@@ -1,11 +1,11 @@
 package com.ceciltechnology.viii28stw.backend.model.dto;
 
-import com.ceciltechnology.viii28stw.backend.enumeration.Sexo;
+import com.ceciltechnology.viii28stw.backend.enumeration.Sex;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
-import com.ceciltechnology.viii28stw.backend.enumeration.UsuarioNivelAcesso;
+import com.ceciltechnology.viii28stw.backend.enumeration.UserAcessLevel;
 import lombok.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -20,17 +20,17 @@ import java.time.LocalDate;
 @Builder
 public class UserDto {
 
-    private String codigo;
-    @NotBlank private String nome;
-    @NotBlank private String sobreNome;
+    private String id;
+    @NotBlank private String fullName;
+    @NotBlank private String nickName;
     @NotBlank @Email private String email;
-    @NotBlank private String senha;
-    private Sexo sexo;
+    @NotBlank private String password;
+    private Sex sex;
 
     @JsonSerialize(using = LocalDateSerializer.class)
     @JsonDeserialize(using = LocalDateDeserializer.class)
-    private LocalDate dataNascimento;
+    private LocalDate dateOfBirth;
 
-    private UsuarioNivelAcesso usuarioNivelAcesso;
+    private UserAcessLevel userAcessLevel;
 
 }

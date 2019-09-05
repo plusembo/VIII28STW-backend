@@ -1,6 +1,5 @@
 package com.ceciltechnology.viii28stw.backend.enumeration;
 
-import com.ceciltechnology.viii28stw.backend.util.I18nFactory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -15,8 +14,8 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 public enum Sex {
-    MALE('M', I18nFactory.getInstance().getResourceBundle().getString("text.sex.male")),
-    FEMALE('F', I18nFactory.getInstance().getResourceBundle().getString("text.sex.female"));
+    MALE('M', "Male"),
+    FEMALE('F', "Female");
 
     private final char id;
     private final String description;
@@ -31,7 +30,5 @@ public enum Sex {
     public String toString() {
         return this.description;
     }
-
-
 
 }

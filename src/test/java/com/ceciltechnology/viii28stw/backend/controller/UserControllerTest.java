@@ -1,9 +1,9 @@
 package com.ceciltechnology.viii28stw.backend.controller;
 
-import com.ceciltechnology.viii28stw.backend.enumeration.Sexo;
-import com.ceciltechnology.viii28stw.backend.enumeration.UsuarioNivelAcesso;
+import com.ceciltechnology.viii28stw.backend.enumeration.Sex;
+import com.ceciltechnology.viii28stw.backend.enumeration.UserAcessLevel;
 import com.ceciltechnology.viii28stw.backend.model.dto.UserDto;
-import com.ceciltechnology.viii28stw.backend.service.IUsuarioService;
+import com.ceciltechnology.viii28stw.backend.service.IUserService;
 import com.ceciltechnology.viii28stw.backend.util.RandomValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
-public class UsuarioControllerTest {
+public class UserControllerTest {
     @Value("${basic.auth.user}")
     private String basicAuthUser;
     @Value("${basic.auth.password}")
@@ -38,7 +38,7 @@ public class UsuarioControllerTest {
     private String headerName;
     
     @Autowired
-    private IUsuarioService usuarioService;
+    private IUserService userService;
     @Autowired
     private TestRestTemplate testRestTemplate;
     @Autowired
@@ -64,43 +64,43 @@ public class UsuarioControllerTest {
     @Before
     public void CriarUsuarioAdiministradorEFazerLogin() {
         if (!INITIALIZED) {
-            UserDto usuarioDto = usuarioService.salvarUsuario(UserDto.builder()
-                    .nome(RandomValue.randomAlphabetic(25))
-                    .sobreNome(RandomValue.randomAlphabetic(25))
+            UserDto userDto = userService.saveUser(UserDto.builder()
+                    .fullName(RandomValue.randomAlphabetic(25))
+                    .nickName(RandomValue.randomAlphabetic(25))
                     .email(RandomValue.randomAlphabetic(6).concat("@")
                             .concat(RandomValue.randomAlphabetic(4)).concat(".")
                             .concat(RandomValue.randomAlphabetic(2)))
-                    .usuarioNivelAcesso(UsuarioNivelAcesso.ADMINISTRADOR)
-                    .senha(RandomValue.randomAlphanumeric(8))
-                    .sexo(Sexo.MASCULINO)
-                    .dataNascimento(LocalDate.now())
+                    .userAcessLevel(UserAcessLevel.ADMINISTRATOR)
+                    .password(RandomValue.randomAlphanumeric(8))
+                    .sex(Sex.MALE)
+                    .dateOfBirth(LocalDate.now())
                     .build());
 
-            UserDto usuarioDto1 = usuarioService.fazerLogin(usuarioDto);
-            httpHeaders.add(headerName, usuarioDto1.getEmail());
+            UserDto userDto1 = userService.fazerLogin(userDto);
+            httpHeaders.add(headerName, userDto1.getEmail());
             INITIALIZED = true;
         }
     }
 
     @Test
-    public void salvarUsuarioSenhaNaoPodeTerTamanhoMaiorQue10() {
+    public void saveUserSenhaNaoPodeTerTamanhoMaiorQue10() {
         @SuppressWarnings("rawtypes")
-        UserDto usuarioDto = UserDto.builder()
-                .nome(RandomValue.randomAlphabetic(25))
-                .sobreNome(RandomValue.randomAlphabetic(25))
+        UserDto userDto = UserDto.builder()
+                .fullName(RandomValue.randomAlphabetic(25))
+                .nickName(RandomValue.randomAlphabetic(25))
                 .email(RandomValue.randomAlphabetic(7).concat("@")
                         .concat(RandomValue.randomAlphabetic(5)).concat(".")
                         .concat(RandomValue.randomAlphabetic(3)))
-                .usuarioNivelAcesso(UsuarioNivelAcesso.USUARIO_COMUM)
-                .senha(RandomValue.randomAlphanumeric(11))
-                .sexo(Sexo.MASCULINO)
-                .dataNascimento(LocalDate.now())
+                .userAcessLevel(UserAcessLevel.COMMON_USER)
+                .password(RandomValue.randomAlphanumeric(11))
+                .sex(Sex.MALE)
+                .dateOfBirth(LocalDate.now())
                 .build();
 
         ResponseEntity responseEntityUsuario = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertNotNull(responseEntityUsuario.getBody());
@@ -108,24 +108,24 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void salvarUsuarioNaoPodeRetornarNuloEnaoDeixarSalvarDoisUsuariosComEmailJaExistente() {
+    public void saveUserNaoPodeRetornarNuloEnaoDeixarSalvarDoisUsuariosComEmailJaExistente() {
         @SuppressWarnings("rawtypes")
-        UserDto usuarioDto = UserDto.builder()
-                .nome(RandomValue.randomAlphabetic(25))
-                .sobreNome(RandomValue.randomAlphabetic(25))
+        UserDto userDto = UserDto.builder()
+                .fullName(RandomValue.randomAlphabetic(25))
+                .nickName(RandomValue.randomAlphabetic(25))
                 .email(RandomValue.randomAlphabetic(7).concat("@")
                         .concat(RandomValue.randomAlphabetic(5)).concat(".")
                         .concat(RandomValue.randomAlphabetic(3)))
-                .senha(RandomValue.randomAlphanumeric(10))
-                .usuarioNivelAcesso(UsuarioNivelAcesso.USUARIO_COMUM)
-                .sexo(Sexo.MASCULINO)
-                .dataNascimento(LocalDate.now())
+                .password(RandomValue.randomAlphanumeric(10))
+                .userAcessLevel(UserAcessLevel.COMMON_USER)
+                .sex(Sex.MALE)
+                .dateOfBirth(LocalDate.now())
                 .build();
 
         ResponseEntity responseEntityUsuario = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(responseEntityUsuario.getBody());
@@ -134,7 +134,7 @@ public class UsuarioControllerTest {
         ResponseEntity responseEntityUsuario1 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario1.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertNotNull(responseEntityUsuario1.getBody());
@@ -142,54 +142,54 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void atualizarUsuarioNaoPodeRetornarNuloEOUsuarioASerAtualizadoDeveConterID() throws IOException {
+    public void updateUserNaoPodeRetornarNuloEOUsuarioASerAtualizadoDeveConterID() throws IOException {
         @SuppressWarnings("rawtypes")
-        UserDto usuarioDto = UserDto.builder()
-                .nome(RandomValue.randomAlphabetic(25))
-                .sobreNome(RandomValue.randomAlphabetic(25))
+        UserDto userDto = UserDto.builder()
+                .fullName(RandomValue.randomAlphabetic(25))
+                .nickName(RandomValue.randomAlphabetic(25))
                 .email(RandomValue.randomAlphabetic(7).concat("@")
                         .concat(RandomValue.randomAlphabetic(5)).concat(".")
                         .concat(RandomValue.randomAlphabetic(3)))
-                .senha(RandomValue.randomAlphanumeric(8))
-                .usuarioNivelAcesso(UsuarioNivelAcesso.USUARIO_COMUM)
-                .sexo(Sexo.MASCULINO)
-                .dataNascimento(LocalDate.now())
+                .password(RandomValue.randomAlphanumeric(8))
+                .userAcessLevel(UserAcessLevel.COMMON_USER)
+                .sex(Sex.MALE)
+                .dateOfBirth(LocalDate.now())
                 .build();
 
         ResponseEntity responseEntityUsuario = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        UserDto usuarioDto1 = mapper.readValue(responseEntityUsuario.getBody().toString(), UserDto.class);
+        UserDto userDto1 = mapper.readValue(responseEntityUsuario.getBody().toString(), UserDto.class);
 
-        assertNotNull(usuarioDto1);
+        assertNotNull(userDto1);
 
         ResponseEntity responseEntityLogin = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlLogin), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto1, httpHeaders), String.class);
+                        new HttpEntity<>(userDto1, httpHeaders), String.class);
 
         then(responseEntityLogin.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        httpHeaders.add(headerName, usuarioDto1.getEmail());
+        httpHeaders.add(headerName, userDto1.getEmail());
 
-        usuarioDto1.setNome(RandomValue.randomAlphabetic(25));
-        usuarioDto1.setSobreNome(RandomValue.randomAlphabetic(25));
-        usuarioDto1.setEmail(RandomValue.randomAlphabetic(7).concat("@")
+        userDto1.setFullName(RandomValue.randomAlphabetic(25));
+        userDto1.setNickName(RandomValue.randomAlphabetic(25));
+        userDto1.setEmail(RandomValue.randomAlphabetic(7).concat("@")
                 .concat(RandomValue.randomAlphabetic(5)).concat(".")
                 .concat(RandomValue.randomAlphabetic(3)));
-        usuarioDto1.setSenha(RandomValue.randomAlphanumeric(8));
-        usuarioDto1.setUsuarioNivelAcesso(UsuarioNivelAcesso.USUARIO_COMUM);
-        usuarioDto1.setSexo(Sexo.FEMININO);
-        usuarioDto1.setDataNascimento(LocalDate.now());
+        userDto1.setPassword(RandomValue.randomAlphanumeric(8));
+        userDto1.setUserAcessLevel(UserAcessLevel.COMMON_USER);
+        userDto1.setSex(Sex.FEMALE);
+        userDto1.setDateOfBirth(LocalDate.now());
 
         ResponseEntity responseEntityUsuario1 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlUpdateUser), HttpMethod.PUT,
-                        new HttpEntity<>(usuarioDto1, httpHeaders), String.class);
+                        new HttpEntity<>(userDto1, httpHeaders), String.class);
 
         then(responseEntityUsuario1.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(responseEntityUsuario1.getBody());
@@ -199,21 +199,21 @@ public class UsuarioControllerTest {
         ResponseEntity responseEntityUsuario2 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSearchUserById), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto1, httpHeaders), String.class);
+                        new HttpEntity<>(userDto1, httpHeaders), String.class);
 
         then(responseEntityUsuario2.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertNotNull(responseEntityUsuario2.getBody());
         then(responseEntityUsuario2.getBody() instanceof UserDto);
 
-        UserDto usuarioDto3 = mapper.readValue(responseEntityUsuario2.getBody().toString(), UserDto.class);
+        UserDto userDto3 = mapper.readValue(responseEntityUsuario2.getBody().toString(), UserDto.class);
 
-        assertEquals(usuarioDto3, usuarioDto1);
+        assertEquals(userDto3, userDto1);
 
-        usuarioDto1.setCodigo(null);
+        userDto1.setId(null);
         ResponseEntity responseEntityUsuario3 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlUpdateUser), HttpMethod.PUT,
-                        new HttpEntity<>(usuarioDto1, httpHeaders), String.class);
+                        new HttpEntity<>(userDto1, httpHeaders), String.class);
 
         then(responseEntityUsuario3.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertNotNull(responseEntityUsuario3.getBody());
@@ -223,21 +223,21 @@ public class UsuarioControllerTest {
     @Test
     public void naoDeixarSalvarUsuarioSemNome() {
         @SuppressWarnings("rawtypes")
-        UserDto usuarioDto = UserDto.builder()
-                .sobreNome(RandomValue.randomAlphabetic(25))
+        UserDto userDto = UserDto.builder()
+                .nickName(RandomValue.randomAlphabetic(25))
                 .email(RandomValue.randomAlphabetic(7).concat("@")
                         .concat(RandomValue.randomAlphabetic(5)).concat(".")
                         .concat(RandomValue.randomAlphabetic(3)))
-                .senha(RandomValue.randomAlphanumeric(8))
-                .usuarioNivelAcesso(UsuarioNivelAcesso.USUARIO_COMUM)
-                .sexo(Sexo.MASCULINO)
-                .dataNascimento(LocalDate.now())
+                .password(RandomValue.randomAlphanumeric(8))
+                .userAcessLevel(UserAcessLevel.COMMON_USER)
+                .sex(Sex.MALE)
+                .dateOfBirth(LocalDate.now())
                 .build();
 
         ResponseEntity responseEntityUsuario = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertNotNull(responseEntityUsuario.getBody());
@@ -247,22 +247,22 @@ public class UsuarioControllerTest {
     @Test
     public void naoDeixarSalvarUsuarioComNomeVazio() {
         @SuppressWarnings("rawtypes")
-        UserDto usuarioDto = UserDto.builder()
-                .nome("    ")
-                .sobreNome(RandomValue.randomAlphabetic(25))
+        UserDto userDto = UserDto.builder()
+                .fullName("    ")
+                .nickName(RandomValue.randomAlphabetic(25))
                 .email(RandomValue.randomAlphabetic(7).concat("@")
                         .concat(RandomValue.randomAlphabetic(5)).concat(".")
                         .concat(RandomValue.randomAlphabetic(3)))
-                .senha(RandomValue.randomAlphanumeric(8))
-                .usuarioNivelAcesso(UsuarioNivelAcesso.USUARIO_COMUM)
-                .sexo(Sexo.MASCULINO)
-                .dataNascimento(LocalDate.now())
+                .password(RandomValue.randomAlphanumeric(8))
+                .userAcessLevel(UserAcessLevel.COMMON_USER)
+                .sex(Sex.MALE)
+                .dateOfBirth(LocalDate.now())
                 .build();
 
         ResponseEntity responseEntityUsuario = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertNotNull(responseEntityUsuario.getBody());
@@ -272,21 +272,21 @@ public class UsuarioControllerTest {
     @Test
     public void naoDeixarSalvarUsuarioSemSobrenome() {
         @SuppressWarnings("rawtypes")
-        UserDto usuarioDto = UserDto.builder()
-                .nome(RandomValue.randomAlphabetic(25))
+        UserDto userDto = UserDto.builder()
+                .fullName(RandomValue.randomAlphabetic(25))
                 .email(RandomValue.randomAlphabetic(7).concat("@")
                         .concat(RandomValue.randomAlphabetic(5)).concat(".")
                         .concat(RandomValue.randomAlphabetic(3)))
-                .senha(RandomValue.randomAlphanumeric(8))
-                .usuarioNivelAcesso(UsuarioNivelAcesso.USUARIO_COMUM)
-                .sexo(Sexo.MASCULINO)
-                .dataNascimento(LocalDate.now())
+                .password(RandomValue.randomAlphanumeric(8))
+                .userAcessLevel(UserAcessLevel.COMMON_USER)
+                .sex(Sex.MALE)
+                .dateOfBirth(LocalDate.now())
                 .build();
 
         ResponseEntity responseEntityUsuario = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertNotNull(responseEntityUsuario.getBody());
@@ -296,22 +296,22 @@ public class UsuarioControllerTest {
     @Test
     public void naoDeixarSalvarUsuarioComSobrenomeVazio() {
         @SuppressWarnings("rawtypes")
-        UserDto usuarioDto = UserDto.builder()
-                .nome(RandomValue.randomAlphabetic(25))
-                .sobreNome("    ")
+        UserDto userDto = UserDto.builder()
+                .fullName(RandomValue.randomAlphabetic(25))
+                .nickName("    ")
                 .email(RandomValue.randomAlphabetic(7).concat("@")
                         .concat(RandomValue.randomAlphabetic(5)).concat(".")
                         .concat(RandomValue.randomAlphabetic(3)))
-                .senha(RandomValue.randomAlphanumeric(8))
-                .usuarioNivelAcesso(UsuarioNivelAcesso.USUARIO_COMUM)
-                .sexo(Sexo.MASCULINO)
-                .dataNascimento(LocalDate.now())
+                .password(RandomValue.randomAlphanumeric(8))
+                .userAcessLevel(UserAcessLevel.COMMON_USER)
+                .sex(Sex.MALE)
+                .dateOfBirth(LocalDate.now())
                 .build();
 
         ResponseEntity responseEntityUsuario = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertNotNull(responseEntityUsuario.getBody());
@@ -321,19 +321,19 @@ public class UsuarioControllerTest {
     @Test
     public void naoDeixarSalvarUsuarioSemEmail() {
         @SuppressWarnings("rawtypes")
-        UserDto usuarioDto = UserDto.builder()
-                .nome(RandomValue.randomAlphabetic(25))
-                .sobreNome(RandomValue.randomAlphabetic(25))
-                .senha(RandomValue.randomAlphanumeric(8))
-                .usuarioNivelAcesso(UsuarioNivelAcesso.USUARIO_COMUM)
-                .sexo(Sexo.MASCULINO)
-                .dataNascimento(LocalDate.now())
+        UserDto userDto = UserDto.builder()
+                .fullName(RandomValue.randomAlphabetic(25))
+                .nickName(RandomValue.randomAlphabetic(25))
+                .password(RandomValue.randomAlphanumeric(8))
+                .userAcessLevel(UserAcessLevel.COMMON_USER)
+                .sex(Sex.MALE)
+                .dateOfBirth(LocalDate.now())
                 .build();
 
         ResponseEntity responseEntityUsuario = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertNotNull(responseEntityUsuario.getBody());
@@ -343,105 +343,105 @@ public class UsuarioControllerTest {
     @Test
     public void naoDeixarSalvarUsuarioComEmailNoFormatoErrado() {
         @SuppressWarnings("rawtypes")
-        UserDto usuarioDto = UserDto.builder()
-                .nome(RandomValue.randomAlphabetic(25))
-                .sobreNome(RandomValue.randomAlphabetic(25))
+        UserDto userDto = UserDto.builder()
+                .fullName(RandomValue.randomAlphabetic(25))
+                .nickName(RandomValue.randomAlphabetic(25))
                 .email("@" + RandomValue.randomAlphabetic(5).concat(".").concat(RandomValue.randomAlphabetic(3)))
-                .senha(RandomValue.randomAlphanumeric(8))
-                .usuarioNivelAcesso(UsuarioNivelAcesso.USUARIO_COMUM)
-                .sexo(Sexo.MASCULINO)
-                .dataNascimento(LocalDate.now())
+                .password(RandomValue.randomAlphanumeric(8))
+                .userAcessLevel(UserAcessLevel.COMMON_USER)
+                .sex(Sex.MALE)
+                .dateOfBirth(LocalDate.now())
                 .build();
 
         ResponseEntity responseEntityUsuario = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertNotNull(responseEntityUsuario.getBody());
         then(responseEntityUsuario.getBody() instanceof MethodArgumentNotValidException);
 
 
-        usuarioDto.setEmail(RandomValue.randomAlphabetic(7));
+        userDto.setEmail(RandomValue.randomAlphabetic(7));
         ResponseEntity responseEntityUsuario1 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario1.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertNotNull(responseEntityUsuario1.getBody());
         then(responseEntityUsuario1.getBody() instanceof MethodArgumentNotValidException);
 
-        usuarioDto.setEmail(RandomValue.randomAlphabetic(7) + "@");
+        userDto.setEmail(RandomValue.randomAlphabetic(7) + "@");
         ResponseEntity responseEntityUsuario2 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario2.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertNotNull(responseEntityUsuario2.getBody());
         then(responseEntityUsuario2.getBody() instanceof MethodArgumentNotValidException);
 
-        usuarioDto.setEmail(RandomValue.randomAlphabetic(7).concat("@").concat(RandomValue.randomAlphabetic(5)));
+        userDto.setEmail(RandomValue.randomAlphabetic(7).concat("@").concat(RandomValue.randomAlphabetic(5)));
         ResponseEntity responseEntityUsuario3 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario3.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertNotNull(responseEntityUsuario3.getBody());
         then(responseEntityUsuario3.getBody() instanceof IllegalArgumentException);
 
-        usuarioDto.setEmail(RandomValue.randomAlphabetic(7).concat("@").concat(".").concat(RandomValue.randomAlphabetic(3)));
+        userDto.setEmail(RandomValue.randomAlphabetic(7).concat("@").concat(".").concat(RandomValue.randomAlphabetic(3)));
         ResponseEntity responseEntityUsuario4 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario4.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertNotNull(responseEntityUsuario4.getBody());
         then(responseEntityUsuario4.getBody() instanceof MethodArgumentNotValidException);
 
-        usuarioDto.setEmail(RandomValue.randomAlphabetic(7).concat("@").concat(RandomValue.randomAlphabetic(5)).concat("."));
+        userDto.setEmail(RandomValue.randomAlphabetic(7).concat("@").concat(RandomValue.randomAlphabetic(5)).concat("."));
         ResponseEntity responseEntityUsuario5 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario5.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertNotNull(responseEntityUsuario5.getBody());
         then(responseEntityUsuario5.getBody() instanceof MethodArgumentNotValidException);
 
-        usuarioDto.setEmail(RandomValue.randomAlphabetic(7).concat("@")
+        userDto.setEmail(RandomValue.randomAlphabetic(7).concat("@")
                 .concat(RandomValue.randomAlphabetic(5)).concat(".")
                 .concat(RandomValue.randomAlphabetic(1)));
         ResponseEntity responseEntityUsuario6 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario6.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertNotNull(responseEntityUsuario6.getBody());
         then(responseEntityUsuario6.getBody() instanceof IllegalArgumentException);
 
-        usuarioDto.setEmail(RandomValue.randomAlphabetic(7).concat("@")
+        userDto.setEmail(RandomValue.randomAlphabetic(7).concat("@")
                 .concat(RandomValue.randomAlphabetic(5)).concat(".")
                 .concat(RandomValue.randomAlphabetic(8)));
         ResponseEntity responseEntityUsuario7 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario7.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertNotNull(responseEntityUsuario7.getBody());
         then(responseEntityUsuario7.getBody() instanceof IllegalArgumentException);
 
-        usuarioDto.setEmail(RandomValue.randomAlphabetic(7) + RandomValue.randomAlphabetic(5) + "." + RandomValue.randomAlphabetic(8));
+        userDto.setEmail(RandomValue.randomAlphabetic(7) + RandomValue.randomAlphabetic(5) + "." + RandomValue.randomAlphabetic(8));
         ResponseEntity responseEntityUsuario8 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario8.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertNotNull(responseEntityUsuario8.getBody());
@@ -452,18 +452,18 @@ public class UsuarioControllerTest {
     @Test
     public void naoDeixarSalvarUsuarioSemSexo() {
         @SuppressWarnings("rawtypes")
-        UserDto usuarioDto = UserDto.builder()
-                .nome(RandomValue.randomAlphabetic(25))
-                .sobreNome(RandomValue.randomAlphabetic(25))
+        UserDto userDto = UserDto.builder()
+                .fullName(RandomValue.randomAlphabetic(25))
+                .nickName(RandomValue.randomAlphabetic(25))
                 .email(RandomValue.randomAlphabetic(7).concat(RandomValue.randomAlphabetic(5)).concat(".").concat(RandomValue.randomAlphabetic(3)))
-                .senha(RandomValue.randomAlphanumeric(8))
-                .dataNascimento(LocalDate.now())
+                .password(RandomValue.randomAlphanumeric(8))
+                .dateOfBirth(LocalDate.now())
                 .build();
 
         ResponseEntity responseEntityUsuario = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertNotNull(responseEntityUsuario.getBody());
@@ -471,84 +471,84 @@ public class UsuarioControllerTest {
     }
 
     @Test
-    public void buscarUsuarioPorIdNaoPodeRetornarNulo() throws IOException {
+    public void searchUserByIdNaoPodeRetornarNulo() throws IOException {
         @SuppressWarnings("rawtypes")
-        UserDto usuarioDto = UserDto.builder()
-                .nome(RandomValue.randomAlphabetic(25))
-                .sobreNome(RandomValue.randomAlphabetic(25))
+        UserDto userDto = UserDto.builder()
+                .fullName(RandomValue.randomAlphabetic(25))
+                .nickName(RandomValue.randomAlphabetic(25))
                 .email(RandomValue.randomAlphabetic(7).concat("@")
                         .concat(RandomValue.randomAlphabetic(5)).concat(".")
                         .concat(RandomValue.randomAlphabetic(3)))
-                .senha(RandomValue.randomAlphanumeric(8))
-                .usuarioNivelAcesso(UsuarioNivelAcesso.USUARIO_COMUM)
-                .sexo(Sexo.MASCULINO)
-                .dataNascimento(LocalDate.now())
+                .password(RandomValue.randomAlphanumeric(8))
+                .userAcessLevel(UserAcessLevel.COMMON_USER)
+                .sex(Sex.MALE)
+                .dateOfBirth(LocalDate.now())
                 .build();
 
         ResponseEntity responseEntityUsuario = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        UserDto usuarioDto1 = mapper.readValue(responseEntityUsuario.getBody().toString(), UserDto.class);
+        UserDto userDto1 = mapper.readValue(responseEntityUsuario.getBody().toString(), UserDto.class);
 
-        assertNotNull(usuarioDto1);
+        assertNotNull(userDto1);
 
         ResponseEntity responseEntityUsuario2 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSearchUserById), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto1, httpHeaders), String.class);
+                        new HttpEntity<>(userDto1, httpHeaders), String.class);
 
         then(responseEntityUsuario2.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        UserDto usuarioDto2 = mapper.readValue(responseEntityUsuario2.getBody().toString(), UserDto.class);
+        UserDto userDto2 = mapper.readValue(responseEntityUsuario2.getBody().toString(), UserDto.class);
 
-        assertNotNull(usuarioDto2);
-        assertEquals(usuarioDto2, usuarioDto1);
+        assertNotNull(userDto2);
+        assertEquals(userDto2, userDto1);
 
         ResponseEntity responseEntityUsuario3 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlDeleteUserById), HttpMethod.DELETE,
-                        new HttpEntity<>(usuarioDto1, httpHeaders), String.class);
+                        new HttpEntity<>(userDto1, httpHeaders), String.class);
 
         then(responseEntityUsuario3.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         ResponseEntity responseEntityUsuario4 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSearchUserById), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto1, httpHeaders), String.class);
+                        new HttpEntity<>(userDto1, httpHeaders), String.class);
 
         then(responseEntityUsuario4.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         then(responseEntityUsuario4.getBody() instanceof NoSuchElementException);
     }
 
     @Test
-    public void buscarTodosOsUsuarios() throws IOException {
+    public void searchAllUsers() throws IOException {
         @SuppressWarnings("rawtypes")
-        UserDto usuarioDto = UserDto.builder()
-                .nome(RandomValue.randomAlphabetic(25))
-                .sobreNome(RandomValue.randomAlphabetic(25))
+        UserDto userDto = UserDto.builder()
+                .fullName(RandomValue.randomAlphabetic(25))
+                .nickName(RandomValue.randomAlphabetic(25))
                 .email(RandomValue.randomAlphabetic(7).concat("@")
                         .concat(RandomValue.randomAlphabetic(5)).concat(".")
                         .concat(RandomValue.randomAlphabetic(3)))
-                .senha(RandomValue.randomAlphanumeric(8))
-                .usuarioNivelAcesso(UsuarioNivelAcesso.USUARIO_COMUM)
-                .sexo(Sexo.MASCULINO)
-                .dataNascimento(LocalDate.now())
+                .password(RandomValue.randomAlphanumeric(8))
+                .userAcessLevel(UserAcessLevel.COMMON_USER)
+                .sex(Sex.MALE)
+                .dateOfBirth(LocalDate.now())
                 .build();
 
         ResponseEntity responseEntityUsuario = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        UserDto usuarioDto1 = mapper.readValue(responseEntityUsuario.getBody().toString(), UserDto.class);
+        UserDto userDto1 = mapper.readValue(responseEntityUsuario.getBody().toString(), UserDto.class);
 
-        assertNotNull(usuarioDto1);
+        assertNotNull(userDto1);
 
         ResponseEntity<UserDto[]> responseEntityUsuarios = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
@@ -557,95 +557,95 @@ public class UsuarioControllerTest {
 
         then(responseEntityUsuarios.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        List<UserDto> listusuarioDto = Arrays.asList(responseEntityUsuarios.getBody());
+        List<UserDto> listuserDto = Arrays.asList(responseEntityUsuarios.getBody());
 
-        assertNotNull(listusuarioDto);
-        then(listusuarioDto.isEmpty());
-        assertNotNull(listusuarioDto.get(0));
-        then(listusuarioDto.get(0) instanceof UserDto);
+        assertNotNull(listuserDto);
+        then(listuserDto.isEmpty());
+        assertNotNull(listuserDto.get(0));
+        then(listuserDto.get(0) instanceof UserDto);
     }
 
     @Test
-    public void deletarUsuarioPorId() throws IOException {
+    public void deleteUserById() throws IOException {
         @SuppressWarnings("rawtypes")
-        UserDto usuarioDto = UserDto.builder()
-                .nome(RandomValue.randomAlphabetic(25))
-                .sobreNome(RandomValue.randomAlphabetic(25))
+        UserDto userDto = UserDto.builder()
+                .fullName(RandomValue.randomAlphabetic(25))
+                .nickName(RandomValue.randomAlphabetic(25))
                 .email(RandomValue.randomAlphabetic(7).concat("@")
                         .concat(RandomValue.randomAlphabetic(5)).concat(".")
                         .concat(RandomValue.randomAlphabetic(3)))
-                .senha(RandomValue.randomAlphanumeric(8))
-                .usuarioNivelAcesso(UsuarioNivelAcesso.USUARIO_COMUM)
-                .sexo(Sexo.MASCULINO)
-                .dataNascimento(LocalDate.now())
+                .password(RandomValue.randomAlphanumeric(8))
+                .userAcessLevel(UserAcessLevel.COMMON_USER)
+                .sex(Sex.MALE)
+                .dateOfBirth(LocalDate.now())
                 .build();
 
         ResponseEntity responseEntityUsuario = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        UserDto usuarioDto1 = mapper.readValue(responseEntityUsuario.getBody().toString(), UserDto.class);
+        UserDto userDto1 = mapper.readValue(responseEntityUsuario.getBody().toString(), UserDto.class);
 
-        assertNotNull(usuarioDto1);
+        assertNotNull(userDto1);
 
         ResponseEntity responseEntityUsuario2 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlDeleteUserById), HttpMethod.DELETE,
-                        new HttpEntity<>(usuarioDto1, httpHeaders), String.class);
+                        new HttpEntity<>(userDto1, httpHeaders), String.class);
 
         then(responseEntityUsuario2.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         ResponseEntity responseEntityUsuario3 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSearchUserById), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto1, httpHeaders), String.class);
+                        new HttpEntity<>(userDto1, httpHeaders), String.class);
 
         then(responseEntityUsuario3.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         then(responseEntityUsuario3.getBody() instanceof NoSuchElementException);
     }
 
     @Test
-    public void deletarUsuarioPorIdInexistente() throws IOException {
+    public void deleteUserByIdInexistente() throws IOException {
         @SuppressWarnings("rawtypes")
         HttpEntity request = new HttpEntity<>(httpHeaders);
 
-        UserDto usuarioDto = UserDto.builder()
-                .nome(RandomValue.randomAlphabetic(25))
-                .sobreNome(RandomValue.randomAlphabetic(25))
+        UserDto userDto = UserDto.builder()
+                .fullName(RandomValue.randomAlphabetic(25))
+                .nickName(RandomValue.randomAlphabetic(25))
                 .email(RandomValue.randomAlphabetic(7).concat("@")
                         .concat(RandomValue.randomAlphabetic(5)).concat(".")
                         .concat(RandomValue.randomAlphabetic(3)))
-                .senha(RandomValue.randomAlphanumeric(8))
-                .usuarioNivelAcesso(UsuarioNivelAcesso.USUARIO_COMUM)
-                .sexo(Sexo.MASCULINO)
-                .dataNascimento(LocalDate.now())
+                .password(RandomValue.randomAlphanumeric(8))
+                .userAcessLevel(UserAcessLevel.COMMON_USER)
+                .sex(Sex.MALE)
+                .dateOfBirth(LocalDate.now())
                 .build();
 
         ResponseEntity responseEntityUsuario = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        UserDto usuarioDto1 = mapper.readValue(responseEntityUsuario.getBody().toString(), UserDto.class);
+        UserDto userDto1 = mapper.readValue(responseEntityUsuario.getBody().toString(), UserDto.class);
 
-        assertNotNull(usuarioDto1);
+        assertNotNull(userDto1);
 
         ResponseEntity responseEntityUsuario2 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlDeleteUserById), HttpMethod.DELETE,
-                        new HttpEntity<>(usuarioDto1, httpHeaders), String.class);
+                        new HttpEntity<>(userDto1, httpHeaders), String.class);
 
         then(responseEntityUsuario2.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         ResponseEntity responseEntityUsuario3 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlDeleteUserById), HttpMethod.DELETE,
-                        new HttpEntity<>(usuarioDto1, httpHeaders), String.class);
+                        new HttpEntity<>(userDto1, httpHeaders), String.class);
 
         then(responseEntityUsuario3.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         then(responseEntityUsuario3.getBody() instanceof EmptyResultDataAccessException);
@@ -655,32 +655,32 @@ public class UsuarioControllerTest {
     public void fazerLogin() throws IOException {
         @SuppressWarnings("rawtypes")
 
-        UserDto usuarioDto = UserDto.builder()
-                .nome(RandomValue.randomAlphabetic(25))
-                .sobreNome(RandomValue.randomAlphabetic(25))
+        UserDto userDto = UserDto.builder()
+                .fullName(RandomValue.randomAlphabetic(25))
+                .nickName(RandomValue.randomAlphabetic(25))
                 .email(RandomValue.randomAlphabetic(7).concat("@")
                         .concat(RandomValue.randomAlphabetic(5)).concat(".")
                         .concat(RandomValue.randomAlphabetic(3)))
-                .senha(RandomValue.randomAlphanumeric(8))
-                .usuarioNivelAcesso(UsuarioNivelAcesso.ADMINISTRADOR)
-                .sexo(Sexo.MASCULINO)
-                .dataNascimento(LocalDate.now())
+                .password(RandomValue.randomAlphanumeric(8))
+                .userAcessLevel(UserAcessLevel.ADMINISTRATOR)
+                .sex(Sex.MALE)
+                .dateOfBirth(LocalDate.now())
                 .build();
 
         ResponseEntity responseEntityUsuario = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlSaveUser), HttpMethod.POST,
-                        new HttpEntity<>(usuarioDto, httpHeaders), String.class);
+                        new HttpEntity<>(userDto, httpHeaders), String.class);
 
         then(responseEntityUsuario.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        UserDto usuarioDto1 = mapper.readValue(responseEntityUsuario.getBody().toString(), UserDto.class);
+        UserDto userDto1 = mapper.readValue(responseEntityUsuario.getBody().toString(), UserDto.class);
 
-        assertNotNull(usuarioDto1);
+        assertNotNull(userDto1);
 
         UserDto usDto = UserDto.builder()
-                .email(usuarioDto1.getEmail())
-                .senha(usuarioDto.getSenha())
+                .email(userDto1.getEmail())
+                .password(userDto.getPassword())
                 .build();
 
         ResponseEntity responseEntityUsuario2 = testRestTemplate
@@ -690,15 +690,15 @@ public class UsuarioControllerTest {
 
         then(responseEntityUsuario2.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        UserDto usuarioDto2 = mapper.readValue(responseEntityUsuario2.getBody().toString(), UserDto.class);
+        UserDto userDto2 = mapper.readValue(responseEntityUsuario2.getBody().toString(), UserDto.class);
 
-        assertNotNull(usuarioDto2);
-        assertEquals(usuarioDto2, usuarioDto1);
+        assertNotNull(userDto2);
+        assertEquals(userDto2, userDto1);
 
         ResponseEntity responseEntityUsuario3 = testRestTemplate
                 .withBasicAuth(basicAuthUser, basicAuthPassword)
                 .exchange(urlPrefix.concat(urlDeleteUserById), HttpMethod.DELETE,
-                        new HttpEntity<>(usuarioDto1, httpHeaders), String.class);
+                        new HttpEntity<>(userDto1, httpHeaders), String.class);
 
         then(responseEntityUsuario3.getStatusCode()).isEqualTo(HttpStatus.OK);
 

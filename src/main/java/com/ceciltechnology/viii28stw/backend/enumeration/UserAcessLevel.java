@@ -1,6 +1,5 @@
 package com.ceciltechnology.viii28stw.backend.enumeration;
 
-import com.ceciltechnology.viii28stw.backend.util.I18nFactory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -11,8 +10,8 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum UserAcessLevel {
-    ADMINISTRATOR(1, I18nFactory.getInstance().getResourceBundle().getString("text.user.acess.level.administrator")),
-    COMMON_USER(2, I18nFactory.getInstance().getResourceBundle().getString("text.user.acess.level.common.user"));
+    ADMINISTRATOR(1, "Administrator"),
+    COMMON_USER(2, "Common user");
 
     private final int id;
     private final String description;

@@ -5,9 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface IUsuarioRepository extends JpaRepository<User, String> {
+public interface IUserRepository extends JpaRepository<User, String> {
 
     boolean existsByEmail(String email);
-    User findByEmailAndSenha(String email, String senha);
-    User findFirstByOrderByCodigoDesc();
+    User findByEmailAndPassword(String email, String password);
+    User findFirstByOrderByIdDesc();
 }

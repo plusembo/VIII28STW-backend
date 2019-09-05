@@ -1,7 +1,7 @@
 package com.ceciltechnology.viii28stw.backend.model.entity;
 
-import com.ceciltechnology.viii28stw.backend.enumeration.Sexo;
-import com.ceciltechnology.viii28stw.backend.enumeration.UsuarioNivelAcesso;
+import com.ceciltechnology.viii28stw.backend.enumeration.Sex;
+import com.ceciltechnology.viii28stw.backend.enumeration.UserAcessLevel;
 import lombok.*;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -16,36 +16,37 @@ import java.time.LocalDate;
 @ToString
 @Builder
 @Entity
+@Table(name="user")
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
-    @Column(name = "CODIGO", length = 25)
-    private String codigo;
+    @Column(name = "id", length = 25)
+    private String id;
 
-    @Column(name = "NOME", length = 25, nullable = false)
-    private String nome;
+    @Column(name = "full_name", length = 25, nullable = false)
+    private String fullName;
 
-    @Column(name = "SOBRE_NOME", length = 25, nullable = false)
-    private String sobreNome;
+    @Column(name = "nick_name", length = 25, nullable = false)
+    private String nickName;
 
     @Email
-    @Column(name = "EMAIL", length = 25, nullable = false)
+    @Column(name = "email", length = 25, nullable = false)
     private String email;
 
-    @Column(name = "SENHA", length = 10, nullable = false)
-    private String senha;
+    @Column(name = "password", length = 10, nullable = false)
+    private String password;
 
     @Enumerated(EnumType.ORDINAL)
-    @Column(name = "SEXO", nullable = false)
-    private Sexo sexo;
+    @Column(name = "sex", nullable = false)
+    private Sex sex;
 
-    @Column(name = "DATA_NASCIMENTO", nullable = false)
-    private LocalDate dataNascimento;
+    @Column(name = "date_of_birth", nullable = false)
+    private LocalDate dateOfBirth;
 
     @Enumerated(EnumType.ORDINAL)
-    @Column(name = "NIVEL_ACESSO", nullable = false)
-    private UsuarioNivelAcesso usuarioNivelAcesso;
+    @Column(name = "user_acess_level", nullable = false)
+    private UserAcessLevel userAcessLevel;
 
 }
