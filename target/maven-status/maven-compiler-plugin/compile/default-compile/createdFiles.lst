@@ -1,0 +1,5 @@
+com\eighttwentyeightsoftware\pensiltikbackend\model\dto\UsuarioDto$UsuarioDtoBuilder.class
+com\eighttwentyeightsoftware\pensiltikbackend\model\entity\Usuario.class
+com\eighttwentyeightsoftware\pensiltikbackend\service\UsuarioService.class
+com\eighttwentyeightsoftware\pensiltikbackend\model\dto\UsuarioDto.class
+com\eighttwentyeightsoftware\pensiltikbackend\model\entity\Usuario$UsuarioBuilder.class
